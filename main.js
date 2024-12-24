@@ -1,31 +1,93 @@
-const randomNumber = function(){
-    const hex = '0123456789ABCDEF'
-    let color = '#'
-    for (let i = 0; i < 6  ; i++) {
-        color += hex[Math.floor(Math.random() * 16)];
-         
-    }
-    console.log(color)
-    return color;
-}
-randomNumber()
 
-let intervalId
-const startChangingColor = function(){
-    if(!intervalId){
-        intervalId = setInterval(changeBgColor , 1000)
-    }
-    
-     function changeBgColor(){
-        document.body.style.backgroundColor = randomNumber()
+let randomNumber = parseInt(Math.random() * 100 + 1);
+const userInput = document.getElementById('guessField');
+const submit = document.getElementById('subt');
+const guessSlot = document.querySelector('.guesses');
+const guessRemaining = document.querySelector('.lastResult');
+const lowOrHi = document.querySelector('.lowOrHi');
+const startOver = document.querySelector('.resultParas');
+const p = document.createElement('p');
 
-    }
-}
-const stopChangingColor = function(){
+let prevGuess = [];
+let numGuess = 1;
+let playGame = true;
 
-    clearInterval(intervalId)
-    intervalId = null 
+if (playGame) {
+    submit.addEventListener('click', function (e) {
+        e.preventDefault();
+        const guess = parseInt(userInput.value);
+        validateGuess(guess);
+    });
 }
 
-document.getElementById('start').addEventListener('click',startChangingColor)
-document.getElementById('stop').addEventListener('click',stopChangingColor)
+function validateGuess(guess) {
+    if (isNaN(guess)) {
+        alert("Please enter a valid number");
+    } else if (guess < 1) {
+        alert("Please enter a number greater than 1");
+    } else if (guess > 100) {
+        alert("Please enter a number smaller than 100");
+    } else {
+        prevGuess.push(guess);
+        if (numGuess >= 11) {
+            displayGuess(guess);
+            displayMessage(`Game Over. The number was ${randomNumber}`);
+            endGame();
+        } else {
+            displayGuess(guess);
+            checkGuess(guess);
+        }
+    }
+}
+
+function checkGuess(guess) {
+    if (guess === randomNumber) {
+        displayMessage(`Congratulations! You guessed it right.`);
+        endGame();
+    } else if (guess < randomNumber) {
+        displayMessage("You guessed a smaller number");
+    } else if (guess > randomNumber) {
+        displayMessage("You guessed a higher number");
+    }
+}
+
+function displayGuess(guess) {
+    userInput.value = '';
+    guessSlot.innerHTML += `${guess} `;
+    numGuess++;
+    guessRemaining.innerHTML = `${11 - numGuess}`;
+}
+
+function displayMessage(message) {
+    lowOrHi.innerHTML = `<h2>${message}</h2>`;
+}
+
+function endGame() {
+    userInput.setAttribute('disabled', '');
+    submit.setAttribute('disabled', '');
+    p.classList.add('button');
+    p.innerHTML = `<h2 id='newGame'>Start New Game</h2>`;
+    startOver.appendChild(p);
+    playGame = false;
+    setupNewGameButton();
+}
+
+function setupNewGameButton() {
+    const newGameButton = document.querySelector('#newGame');
+    newGameButton.addEventListener('click', function () {
+        startGame();
+    });
+}
+
+function startGame() {
+    randomNumber = parseInt(Math.random() * 100 + 1);
+    prevGuess = [];
+    numGuess = 1;
+    guessSlot.innerHTML = '';
+    guessRemaining.innerHTML = '10';
+    lowOrHi.innerHTML = '';
+    userInput.removeAttribute('disabled');
+    submit.removeAttribute('disabled');
+    startOver.removeChild(p);
+    playGame = true;
+}
